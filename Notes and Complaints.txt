@@ -1,0 +1,5 @@
+Welcome,
+
+I present a collection of some tools for manipulating CANalyzer format J1939 CAn logs, developed beginning in spring 2024; edited for readability.
+
+In general, processes describe some specific task being done to the data, like writing more power perecnt messages or calculating bus load, while tools contain the functions used to achieve that purpose. 
