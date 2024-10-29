@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 This script has functions to filter out a piece of info from a CAN log, it is also 
-set up to run the filtering on all logs in a folder
+set up to run the filtering on all logs in a folder. it can constuct a time series
+based on the results of searching all logs.
 
 @author: jc16287
 """

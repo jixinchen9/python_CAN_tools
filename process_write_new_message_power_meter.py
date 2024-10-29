@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 """
-This script has functions to filter out a piece of info from a CAN log, it is also 
-set up to run the filtering on all logs in a folder
-
-other functions include writing time series with real US central time using time stamps
-and beginning times in each log
+This script has functions to calculate displayed engine power percent based on 
+engine speed and percent load at speed; it writes the results of the
+calculation into a CAN message, finally the script can output a txt document 
+of a 'generated' CAN log in J1939 CANalyzer format. The user can specify how 
+many disp power percent messages get inserted.
 
 @author: jc16287
 """
