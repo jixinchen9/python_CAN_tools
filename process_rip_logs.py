@@ -13,6 +13,7 @@ This script has functions to filter out a piece of info from a CAN log, that's a
 # from datetime import timedelta
 # import os
 import tools_Parse_CAN_message
+import tools_search_dbc
 
 channel_of_interest=str(20)
 baud_rate=500000   
@@ -21,13 +22,13 @@ Reference_min_time_interval=(bits_per_message-3)/baud_rate
 
 time_format='%H:%M:%S.%f'
 message_indices={'tst_0':0,
-                 'tst_1':-25,
-                 'pgn_0':-19,
-                 'pgn_3':-15,
-                 'sa_0':-15,
-                 'sa_1':-13,
-                 'pgnsa_0':-19,
-                 'pgnsa_5':-13,
+                 'tst_1':-22,
+                 'pgn_0':-16,
+                 'pgn_3':-12,
+                 'sa_0':-12,
+                 'sa_1':-10,
+                 'pgnsa_0':-16,
+                 'pgnsa_5':-10,
                  'cmd_0':4,
                  'cmd_4':9,
                  'data_0':4,
@@ -40,8 +41,10 @@ message_indices={'tst_0':0,
                  'priority_1':-16,
                  }
 
-folder_w_logs='D:\\064 2006_14 sometimes\\Post install both machines'
-log_name='Logger_c4-00-ad-ea-26-51_2024-09-19_210834_00084_GQM.asc'
+folder_w_logs='D:\\066 shutdown_all_629_31\dourado'
+log_name='h2389_shutdown_log_001_07292024.asc'
+dbc_file_path=r"D:\Generated_DBC_09262024\PodB1.dbc"
+
 all_lines=open(folder_w_logs+'\\'+log_name).readlines()
 
 #uncomment this part to check if the script can slice/extract the object attributes correctly
@@ -54,26 +57,14 @@ for i in range(20,40):
     test_msgs.append(parsed_msg)
 
 unobject_test_msgs=tools_Parse_CAN_message.show_CAN_list(test_msgs)
-
+# print("type of pgnsa att:", type(test_msgs[1].PGN_SA))
 
 CAN_message_all=[]
 DTC_active_set=set()
 DTC_stored_set=set()
 authentication_response=[]
 
-# enginespeed_timeseries=[]
-# pctldspd_timeseries=[]
-
-
-# #what do displayed power percent high res messages look like?:
-# power_perc_chan="2"
-# power_perc_rxtx="Rx"
-# power_perc_priority="14"
-# power_perc_pgnsa="FFFB5B"
-# power_perc_pgn="FFFB"
-# power_perc_sa="5B"
-# power_perc_cmdbyte="01 15"
-
+signal_interested_val_0_timeseries=[]
 
 #find the starting time stamp
 for line in all_lines:
@@ -82,23 +73,30 @@ for line in all_lines:
         first_time_stamp=float(line[slice(0,d8_result-25)])
         break
 
+signal_interested_0="FlexpwrReq " #put in name of signal exactly as it appears in the CAN spreadsheet, with a space at end to exclude names which are subsets
+signal_interested_0_dict=tools_search_dbc.find_signal(signal_interested_0, dbc_file_path)
+
 for line in all_lines:
     
-
-    
-      
     current_message=tools_Parse_CAN_message.parse_pdu(line, message_indices)
     
     if current_message is None:
         continue
     
     #we can filter the time series based on time stamp if we want
-    # if current_message.time_stamp>350 or current_message.time_stamp<100:
+    # if current_message.time_stamp>1 or current_message.time_stamp<10:
     #     continue  
     
+    #print(line)
     CAN_message_all.append(current_message)
-    
-    if current_message.PGN == "EF06" and current_message.cmd_byte=="64 16":
-        authentication_response.append(current_message)
+    # try:
+    signal_interested_val_0=tools_search_dbc.filter_signal(current_message, signal_interested_0_dict)
+    if signal_interested_val_0 != None:
+        signal_interested_val_0_timeseries.append(signal_interested_val_0)
+    # except:
+    #     continue
+
+    # if current_message.PGN == "EF06" and current_message.cmd_byte=="64 16":
+    #     authentication_response.append(current_message)
 
 authentication_response_unobject=tools_Parse_CAN_message.show_CAN_list(authentication_response)
