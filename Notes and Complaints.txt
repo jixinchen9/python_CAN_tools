@@ -5,3 +5,5 @@ I present a collection of some tools for manipulating CANalyzer format J1939 CAn
 In general, processes describe some specific task being done to the data, like writing more power perecnt messages or calculating bus load, while tools contain the functions used to achieve that purpose. 
 
 11-22-2024: the functions always contain the latest methods, though they may not be retro applied to many of the processes; retro application will take place in the coming weeks as time allows.
+
+12-19-2024: regex based message parsing added to tools file, only applied to rip logs process. 

@@ -16,11 +16,6 @@ import tools_Parse_CAN_message
 import tools_search_dbc
 import re
 
-channel_of_interest=str(20)
-baud_rate=500000   
-bits_per_message=131
-Reference_min_time_interval=(bits_per_message-3)/baud_rate
-
 folder_w_logs='D:\\066 shutdown_all_629_31\dourado'
 log_name='h2389_shutdown_log_001_07292024.asc'
 dbc_file_path=r"D:\Generated_DBC_09262024\PodB1.dbc"
@@ -51,8 +46,8 @@ for line in all_lines:
 
 signal_interested_0_df=pd.DataFrame(signal_interested_val_0_timeseries,columns=['timestamp','EngineSpeed'])
 
-signal_interested_0_df.plot(y='EngineSpeed',label='DMA blocks average Busload',kind='line')
-plt.xlabel('Time')
+signal_interested_0_df.plot(x = 'timestamp', y='EngineSpeed',label='DMA blocks average Busload',kind='line')
+plt.xlabel('Time (s)')
 plt.ylabel('EngineSpeed')
 plt.title('Signal_Interested')
 plt.show()
