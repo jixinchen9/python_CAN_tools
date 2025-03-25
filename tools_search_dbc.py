@@ -97,10 +97,47 @@ dbc_file_path=r"D:\Generated_DBC_09262024\VehB1.dbc"
 signal_name="EngineSpeed "           
 test01=find_signal(signal_name, dbc_file_path)
 
-
-
-# 
 def filter_signal(CAN_msg_obj,signal_dictionary):
+
+    if CAN_msg_obj.PGN_SA==signal_dictionary["pgnsa"] and (signal_dictionary["cmd byte"]==None or signal_dictionary["cmd byte"]==CAN_msg_obj.cmd_byte):
+        #print(CAN_msg_obj.time_stamp,CAN_msg_obj.PGN_SA)
+        msg_byte = CAN_msg_obj.data_bytes
+        #turn the can obj data byte string into bits
+        msg_bit_nospace=bin(int(msg_byte.replace(" ",""),16))[2:].zfill(64)
+        msg_bit_le=""
+        number_of_data_bytes=len(msg_bit_nospace)//8
+
+        #bits within a byte are fully reversed to ease indexing for little endian    
+        for i in range(number_of_data_bytes):
+            bits_be=msg_bit_nospace[8*i:8*i+8]
+            #print('big endian:',bits_be)
+            bits_le=bits_be[::-1]
+            #print('little endian:',bits_le)
+            msg_bit_le+=bits_le
+
+        signal_bit_be=msg_bit_nospace[signal_dictionary["start bit"]:signal_dictionary["start bit"]+signal_dictionary["bit length"]]
+        signal_bit_le=msg_bit_le[signal_dictionary["start bit"]:signal_dictionary["start bit"]+signal_dictionary["bit length"]]
+
+        #when signal spans multiple data bytes, the bits must be combined less significant byte first and then converted
+        if signal_dictionary["bit length"]>8:
+            reversed_bit=""
+            
+            for i in range(len(signal_bit_be)//8):
+                add_bits=signal_bit_be[-8:]
+                reversed_bit+=add_bits
+                signal_bit_be=signal_bit_be[:-8]
+                #print(add_bits)
+            
+            signal_value=int(reversed_bit,2)*signal_dictionary["scale factor"]+signal_dictionary["offset"]
+
+        #when bit length of signal is less than byte, then the correct bits are reversed to be converted
+        if signal_dictionary["bit length"]<=8:
+            signal_value=int(signal_bit_le[::-1],2)*signal_dictionary["scale factor"]+signal_dictionary["offset"]
+        
+        #print(signal_value)
+        return(signal_value)
+    
+def filter_signal_test(CAN_msg_obj,signal_dictionary):
 
     if CAN_msg_obj.PGN_SA==signal_dictionary["pgnsa"] and (signal_dictionary["cmd byte"]==None or signal_dictionary["cmd byte"]==CAN_msg_obj.cmd_byte):
         #print(CAN_msg_obj.time_stamp,CAN_msg_obj.PGN_SA)
@@ -137,7 +174,7 @@ def filter_signal(CAN_msg_obj,signal_dictionary):
         if test01["bit length"]<=8:
             signal_value=int(signal_bit_le[::-1],2)*test01["scale factor"]+test01["offset"]
         
-        print(signal_value)
+        #print(signal_value)
         return(signal_value)
         #pick out the bits relevant to signal
         #convert bits using offset and factor
