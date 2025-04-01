@@ -16,8 +16,10 @@ import tools_Parse_CAN_message
 import tools_search_dbc
 import re
 
-folder_w_logs = 'D:\\085 100perc power at new default high idle'
-log_name = 'Logger_c4-00-ad-49-ec-fa_2025-02-18_173609_00282_GQM.asc'
+folder_w_logs = 'D:\\085 100perc power at new default high idle\\high_speed_test\\CAN'
+log_name = '2311_nominal_LVL2_01.asc'
+# 'D:\\085 100perc power at new default high idle'
+# 'Logger_c4-00-ad-49-ec-fa_2025-02-18_173609_00282_GQM.asc'
 dbc_file_path_00 = r"D:\Generated_DBC_09262024\PodB1.dbc"
 dbc_file_path_01 = r"D:\Generated_DBC_09262024\VehB1.dbc"
 
@@ -37,8 +39,8 @@ signal_interested_1="DisplayedEnginePowerHighRes " #put in name of signal exactl
 signal_interested_1_dict=tools_search_dbc.find_signal(signal_interested_1, dbc_file_path_01)
 signal_interested_val_1_timeseries=[]
 
-start_time = 460
-end_time = 525
+start_time = 26
+end_time = 86
 
 for line in all_lines:
     if re.search("d\s[0-9]", line):
@@ -49,7 +51,7 @@ for line in all_lines:
         if current_message.time_stamp < start_time or current_message.time_stamp > end_time:
             continue  
 
-        CAN_message_all.append(current_message)
+        #CAN_message_all.append(current_message)
         
         '''
         filter for the signals of interest and create a list of tuples of form (timestamp, result)
@@ -61,7 +63,7 @@ for line in all_lines:
             
         signal_interested_val_1=tools_search_dbc.filter_signal(current_message, signal_interested_1_dict)
         if signal_interested_val_1 != None:
-            print(current_message.time_stamp, current_message.PGN_SA, current_message.data_bytes, " le bit")
+            #print(current_message.time_stamp, current_message.PGN_SA, current_message.data_bytes, " le bit")
             signal_interested_val_1_timeseries.append((current_message.time_stamp, signal_interested_val_1))
 
 signal_interested_0_df=pd.DataFrame(signal_interested_val_0_timeseries,columns=['timestamp','EngineSpeed'])
@@ -80,6 +82,6 @@ plt.show()
 
 signal_interested_1_df.plot(x = 'timestamp', y='DisplayedEnginePowerHighRes',label='DMA blocks average Busload',kind='line')
 plt.xlabel('Time (s)')
-plt.ylabel('EngineSpeed')
+plt.ylabel('DisplayedEnginePowerHighRes')
 plt.title('Signal_Interested')
 plt.show()
