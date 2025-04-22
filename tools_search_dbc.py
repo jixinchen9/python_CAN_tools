@@ -56,12 +56,25 @@ def find_signal(signal_name,dbc_file_path):
             
             cmdbyte_query=re.search(cmdbyte_regex,line)
             
+            '''
+            duct tape alert: the writing of cmd byte needs more rigour
+            '''
+            
             if cmdbyte_query!=None:
                 cmdbyte_raw_result=hex(int(cmdbyte_query.group().strip("m: ")))
+                print(cmdbyte_raw_result)
+                
                 if len(cmdbyte_raw_result)==6:
                     cmd_byte_space_result=cmdbyte_raw_result[4:6]+" "+cmdbyte_raw_result[2:4]
+                
                 if len(cmdbyte_raw_result)==4:
                     cmd_byte_space_result=cmdbyte_raw_result[2:4]
+                    
+                if len(cmdbyte_raw_result)==5:
+                    cmd_byte_space_result=cmdbyte_raw_result[3:5] + " 0"+ cmdbyte_raw_result[2]
+            
+                cmd_byte_space_result = cmd_byte_space_result.upper()
+                
             look_for_msg=True
         
         if look_for_msg==True:
@@ -94,8 +107,12 @@ a brief demonstration::
 '''
 
 dbc_file_path=r"D:\Generated_DBC_09262024\VehB1.dbc"
-signal_name="EngineSpeed "           
+signal_name="ThreshingSpeed "           
 test01=find_signal(signal_name, dbc_file_path)
+
+dbc_file_path=r"D:\Generated_DBC_09262024\PodB1.dbc"
+signal_name="FlexpwrReq "           
+test02=find_signal(signal_name, dbc_file_path)
 
 def filter_signal(CAN_msg_obj,signal_dictionary):
 

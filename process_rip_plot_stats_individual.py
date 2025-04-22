@@ -20,7 +20,7 @@ import tools_plot_or_export
 folder_w_logs = 'D:\\088 a117040\\data\\CAN'
 
 
-log_name = 'condition2_run01.asc'
+log_name = 'condition1_run01.asc'
 # 'D:\\085 100perc power at new default high idle'
 # 'Logger_c4-00-ad-49-ec-fa_2025-02-18_173609_00282_GQM.asc'
 dbc_file_path_00 = r"D:\Generated_DBC_09262024\PodB1.dbc"
@@ -38,9 +38,13 @@ signal_interested_0="EngineSpeed " #put in name of signal exactly as it appears 
 signal_interested_0_dict=tools_search_dbc.find_signal(signal_interested_0, dbc_file_path_00)
 signal_interested_val_0_timeseries=[]
 
-signal_interested_1="DisplayedEnginePowerHighRes " #put in name of signal exactly as it appears in the CAN spreadsheet, with a space at end to exclude names which are subsets
+signal_interested_1="SeparatorDrive " #put in name of signal exactly as it appears in the CAN spreadsheet, with a space at end to exclude names which are subsets
 signal_interested_1_dict=tools_search_dbc.find_signal(signal_interested_1, dbc_file_path_01)
 signal_interested_val_1_timeseries=[]
+
+signal_interested_2="ThreshingSpeed " #put in name of signal exactly as it appears in the CAN spreadsheet, with a space at end to exclude names which are subsets
+signal_interested_2_dict=tools_search_dbc.find_signal(signal_interested_2, dbc_file_path_01)
+signal_interested_val_2_timeseries=[]
 
 start_time = 0
 end_time = 800
@@ -65,13 +69,20 @@ for line in all_lines:
             signal_interested_val_0_timeseries.append((current_message.time_stamp, signal_interested_val_0))
             
         signal_interested_val_1=tools_search_dbc.filter_signal(current_message, signal_interested_1_dict)
+        
         if signal_interested_val_1 != None:
             #print(current_message.time_stamp, current_message.PGN_SA, current_message.data_bytes, " le bit")
             signal_interested_val_1_timeseries.append((current_message.time_stamp, signal_interested_val_1))
+        
+        signal_interested_val_2=tools_search_dbc.filter_signal(current_message, signal_interested_2_dict)
+        if signal_interested_val_2 != None:
+            signal_interested_val_2_timeseries.append((current_message.time_stamp, signal_interested_val_2))
 
 signal_interested_0_df=pd.DataFrame(signal_interested_val_0_timeseries,columns=['timestamp',signal_interested_0])
 
 signal_interested_1_df=pd.DataFrame(signal_interested_val_1_timeseries,columns=['timestamp',signal_interested_1])
+
+signal_interested_2_df=pd.DataFrame(signal_interested_val_2_timeseries,columns=['timestamp',signal_interested_2])
 
 Mean_displayed_engine_power = signal_interested_1_df[signal_interested_1].mean()
 
@@ -80,7 +91,17 @@ print("Mean DisplayedEnginePowerHighRes over interval is: ", Mean_displayed_engi
 
 tools_plot_or_export.plot_single_signal(signal_interested_0, signal_interested_0_df)
 tools_plot_or_export.plot_single_signal(signal_interested_1, signal_interested_1_df)
+tools_plot_or_export.plot_single_signal(signal_interested_2, signal_interested_2_df)
+
+'''
+Merge the dataframes
+'''
+
+combined_signals_df = signal_interested_0_df.merge(signal_interested_1_df, how='outer', on='timestamp')
+combined_signals_df = combined_signals_df.merge(signal_interested_2_df, how='outer', on='timestamp')
+combined_signals_df = combined_signals_df.fillna(method='bfill')
 
 folder_w_exports = 'D:\\088 a117040\\data\\CAN\\exported_channel\\'
-export_name = folder_w_exports + log_name.replace(".asc","") + ".csv"
-signal_interested_0_df.to_csv(export_name)
+export_label = "_lockup_sep_drive"
+export_name = folder_w_exports + log_name.replace(".asc","") + export_label + ".csv"
+combined_signals_df.to_csv(export_name)
