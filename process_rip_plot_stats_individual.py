@@ -9,15 +9,18 @@ This script has functions to filter out a piece of info from a CAN log, that's a
 
 import matplotlib.pyplot as plt
 import pandas as pd
+import re
 # from datetime import datetime as dt
 # from datetime import timedelta
 # import os
 import tools_Parse_CAN_message
 import tools_search_dbc
-import re
+import tools_plot_or_export
 
-folder_w_logs = 'D:\\085 100perc power at new default high idle\\high_speed_test\\CAN'
-log_name = '2311_nominal_LVL2_01.asc'
+folder_w_logs = 'D:\\088 a117040\\data\\CAN'
+
+
+log_name = 'condition2_run01.asc'
 # 'D:\\085 100perc power at new default high idle'
 # 'Logger_c4-00-ad-49-ec-fa_2025-02-18_173609_00282_GQM.asc'
 dbc_file_path_00 = r"D:\Generated_DBC_09262024\PodB1.dbc"
@@ -39,8 +42,8 @@ signal_interested_1="DisplayedEnginePowerHighRes " #put in name of signal exactl
 signal_interested_1_dict=tools_search_dbc.find_signal(signal_interested_1, dbc_file_path_01)
 signal_interested_val_1_timeseries=[]
 
-start_time = 26
-end_time = 86
+start_time = 0
+end_time = 800
 
 for line in all_lines:
     if re.search("d\s[0-9]", line):
@@ -66,22 +69,18 @@ for line in all_lines:
             #print(current_message.time_stamp, current_message.PGN_SA, current_message.data_bytes, " le bit")
             signal_interested_val_1_timeseries.append((current_message.time_stamp, signal_interested_val_1))
 
-signal_interested_0_df=pd.DataFrame(signal_interested_val_0_timeseries,columns=['timestamp','EngineSpeed'])
+signal_interested_0_df=pd.DataFrame(signal_interested_val_0_timeseries,columns=['timestamp',signal_interested_0])
 
-signal_interested_1_df=pd.DataFrame(signal_interested_val_1_timeseries,columns=['timestamp','DisplayedEnginePowerHighRes'])
+signal_interested_1_df=pd.DataFrame(signal_interested_val_1_timeseries,columns=['timestamp',signal_interested_1])
 
-Mean_displayed_engine_power = signal_interested_1_df['DisplayedEnginePowerHighRes'].mean()
+Mean_displayed_engine_power = signal_interested_1_df[signal_interested_1].mean()
 
 print("Mean DisplayedEnginePowerHighRes over interval is: ", Mean_displayed_engine_power)
 
-signal_interested_0_df.plot(x = 'timestamp', y='EngineSpeed',label='DMA blocks average Busload',kind='line')
-plt.xlabel('Time (s)')
-plt.ylabel('EngineSpeed')
-plt.title('Signal_Interested')
-plt.show()
 
-signal_interested_1_df.plot(x = 'timestamp', y='DisplayedEnginePowerHighRes',label='DMA blocks average Busload',kind='line')
-plt.xlabel('Time (s)')
-plt.ylabel('DisplayedEnginePowerHighRes')
-plt.title('Signal_Interested')
-plt.show()
+tools_plot_or_export.plot_single_signal(signal_interested_0, signal_interested_0_df)
+tools_plot_or_export.plot_single_signal(signal_interested_1, signal_interested_1_df)
+
+folder_w_exports = 'D:\\088 a117040\\data\\CAN\\exported_channel\\'
+export_name = folder_w_exports + log_name.replace(".asc","") + ".csv"
+signal_interested_0_df.to_csv(export_name)
