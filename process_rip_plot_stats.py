@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-This script has functions to filter out a piece of info from a CAN log, that's about it'
+This script has functions to filter several signals, and analyze them'
 
 @author: jc16287
 """
@@ -36,8 +36,13 @@ put all this in a function, very clunky
 
 signals_ds = [
     {"name": "EngineSpeed ", "dbc": dbc_file_path_00, "dict":{}, "time_series": []},
-    {"name": "SeparatorDrive ", "dbc": dbc_file_path_01, "dict":{}, "time_series": []},
-    {"name": "ThreshingSpeed ", "dbc": dbc_file_path_01, "dict":{}, "time_series": []}
+    {"name": "FlexpwrReq ", "dbc": dbc_file_path_00, "dict":{}, "time_series": []},
+    {"name": "HarvEngageCmds2 ", "dbc": dbc_file_path_01, "dict":{}, "time_series": []}
+    ]
+
+signals_ds_other = [
+    {"name": "EngineSpeed ", "dbc": dbc_file_path_00, "dict":{}, "time_series": []},
+    {"name": "HarvEngageCmds2 ", "dbc": dbc_file_path_01, "dict":{}, "time_series": []}
     ]
 
 for i in signals_ds:
@@ -67,11 +72,6 @@ for k in signals_ds:
     k["df"] = pd.DataFrame(k["time_series"], columns=['timestamp',k["name"]])
     tools_plot_or_export.plot_single_signal(k["name"], k["df"])
     
-'''
-Mean_displayed_engine_power = signal_interested_1_df[signal_interested_1].mean()
-
-print("Mean DisplayedEnginePowerHighRes over interval is: ", Mean_displayed_engine_power)
-'''
 
 Min_EngineSpeed = signals_ds[0]["df"][signals_ds[0]["name"]].min()
 min_speed_idx = signals_ds[0]["df"][signals_ds[0]["name"]].idxmin()
@@ -85,14 +85,16 @@ recovery_tst = recovery_search_df.loc[recovery_index, 'timestamp']
 
 print("Recovery Time is: ", recovery_tst - min_speed_tst)
 
+
 '''
-Merge the dataframes
+Merge the dataframes if desired
 '''
 
+'''
 combined_signals_df = signals_ds[0]["df"].merge(signals_ds[1]["df"], how='outer', on='timestamp')
 combined_signals_df = combined_signals_df.merge(signals_ds[2]["df"], how='outer', on='timestamp')
 combined_signals_df = combined_signals_df.fillna(method='bfill')
-
+'''
 folder_w_exports = 'D:\\088 a117040\\data\\exported_channel\\'
 export_label = "_lockup_sep_drive"
 export_name = folder_w_exports + log_name.replace(".asc","") + export_label + ".csv"

@@ -107,16 +107,16 @@ a brief demonstration::
 '''
 
 dbc_file_path=r"D:\Generated_DBC_09262024\VehB1.dbc"
-signal_name="ThreshingSpeed "           
+signal_name="HarvEngageCmds2 "           
 test01=find_signal(signal_name, dbc_file_path)
 
 dbc_file_path=r"D:\Generated_DBC_09262024\PodB1.dbc"
-signal_name="FlexpwrReq "           
+signal_name="EngineSpeed "           
 test02=find_signal(signal_name, dbc_file_path)
 
 def filter_signal(CAN_msg_obj,signal_dictionary):
 
-    if CAN_msg_obj.PGN_SA==signal_dictionary["pgnsa"] and (signal_dictionary["cmd byte"]==None or signal_dictionary["cmd byte"]==CAN_msg_obj.cmd_byte):
+    if CAN_msg_obj.PGN_SA==signal_dictionary["pgnsa"] and (signal_dictionary["cmd byte"]==None or signal_dictionary["cmd byte"]==CAN_msg_obj.cmd_byte or signal_dictionary["cmd byte"]==CAN_msg_obj.cmd_byte_singleton):
         #print(CAN_msg_obj.time_stamp,CAN_msg_obj.PGN_SA)
         msg_byte = CAN_msg_obj.data_bytes
         #turn the can obj data byte string into bits

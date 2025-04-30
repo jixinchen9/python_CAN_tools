@@ -16,6 +16,7 @@ class CAN_message:
             SA,
             time_stamp,
             cmd_byte,
+            cmd_byte_singleton,
             data_bytes,
             channel,
             rxtx,
@@ -27,6 +28,7 @@ class CAN_message:
         self.SA = SA
         self.time_stamp = time_stamp
         self.cmd_byte = cmd_byte
+        self.cmd_byte_singleton = cmd_byte_singleton
         self.data_bytes = data_bytes
         self.channel = channel
         self.rxtx = rxtx
@@ -74,11 +76,14 @@ def parse_pdu_regex (line):
     
     #find how many data bytes there are from the regex search result
     byte_amount_result = int(byte_amount_query.group()[-1:])
-    
+    '''
     #slice out data bytes starting from the end of byte number field and based on number 
-    #of bytes. command bytes isnt rigorous (wont always be 2 bytes), will improve
+    of bytes. cmd_bytes is 2 bytes, cmd_bytes_singleton is 1 byte, filtering function accounts
+    for both; dont think there are 3 byte cmd bytes yet
+    '''
     data_bytes_slice = slice(byte_amount_indices[1]+1,byte_amount_indices[1]+byte_amount_result*3)
     cmd_bytes_slice = slice(byte_amount_indices[1]+1,byte_amount_indices[1]+2*3)
+    cmd_bytes_s_slice = slice(byte_amount_indices[1]+1,byte_amount_indices[1]+1*3)
     
     '''
     assign to CAN parameters using regex search results or other methods
@@ -93,24 +98,25 @@ def parse_pdu_regex (line):
     priority = line[priority_slice]
     data_bytes = line[data_bytes_slice]
     cmd_bytes = line[cmd_bytes_slice]
+    cmd_bytes_s = line[cmd_bytes_s_slice]
     
     '''
     feed parsed strings into CAN_message objects
     '''
-    current_message=CAN_message(pgn_and_sa, pgn, source_address, timestamp, cmd_bytes, data_bytes , channel ,rxtx ,timestamp, priority)
+    current_message=CAN_message(pgn_and_sa, pgn, source_address, timestamp, cmd_bytes,cmd_bytes_s, data_bytes , channel ,rxtx ,timestamp, priority)
     #current_message = pgn_and_sa + " " + str(timestamp) + " " + data_bytes + "channel: " + channel + rxtx
     return(current_message)
-
-test_line_01 = "   0.003325 1  08EFFF5Bx    Rx   d 8 64 57 2F FF FF 00 00 FF "
-test_line_02 = "2619.825513 20  18FFF886x       Rx   d 8 9B FD 7C 04 64 80 1A 00"
-test_output =  parse_pdu_regex(test_line_02)
 
 
 def show_CAN_list(CAN_message_list):
     CAN_list_un_object=[]
     for message in CAN_message_list:
-        CAN_list_un_object.append((message.time_stamp, message.time_stamp_1, message.channel, message.PGN_SA,message.data_bytes,message.cmd_byte))
+        CAN_list_un_object.append((message.time_stamp, message.time_stamp_1, message.channel, message.PGN_SA,message.data_bytes,message.cmd_byte, message.cmd_byte_singleton))
     return(CAN_list_un_object)
+
+test_line_01 = "   0.003325 1  08EFFF5Bx    Rx   d 8 64 57 2F FF FF 00 00 FF "
+test_line_02 = "2619.825513 20  18FFF886x       Rx   d 8 9B FD 7C 04 64 80 1A 00"
+test_output =  show_CAN_list([parse_pdu_regex(test_line_02)])
 
 '''
 everything beyond here is old and obsolete; parse_pdu function will be deleted after last process is updated,
