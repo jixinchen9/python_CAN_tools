@@ -78,7 +78,7 @@ def parse_pdu_regex (line):
     byte_amount_result = int(byte_amount_query.group()[-1:])
     '''
     #slice out data bytes starting from the end of byte number field and based on number 
-    of bytes. cmd_bytes is 2 bytes, cmd_bytes_singleton is 1 byte, filtering function accounts
+    of bytes. cmd_bytes is 2 bytes, cmd_bytes_single is 1 byte, filtering function accounts
     for both; dont think there are 3 byte cmd bytes yet
     '''
     data_bytes_slice = slice(byte_amount_indices[1]+1,byte_amount_indices[1]+byte_amount_result*3)
