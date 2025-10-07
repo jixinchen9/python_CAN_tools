@@ -8,20 +8,38 @@ For now will just shoot for trimming a chunk of time stamps out of a log
 """
 import regex as re
 
-folder_w_logs='D:\\027 unstable engine speed\e174815'
-log_name='Defects 345 PM.asc'
+folder_w_logs=r'D:\\098 misc field issue\\x9 1200 vpf min pitch'
+log_name='Logger_cc-82-7f-6f-96-f5_2025-10-04_160621_00103_GCH.asc'
 
-orig_lines=open(folder_w_logs+'\\'+log_name).readlines()
+with open (folder_w_logs+'\\'+log_name) as f:
+    orig_lines = f.readlines()
+    f.close()
 
-rxtx_regex = "[r-t]x"
+rxtx_regex = "(?i)[r-t]x"
 timestamp_regex = "[0-9]+\.[0-9]+"
+
+trim_begin = 100.0
+trim_end = 200.0
+
+keep_searching = True
+
 for line in orig_lines:
 
     if(re.search(rxtx_regex, line, re.IGNORECASE)):
         timestamp_query = re.search(timestamp_regex , line)
         timestamp = float(timestamp_query.group())
-        if timestamp>280.0 and timestamp<680.0:
-            with open('trimmed_345.asc','a') as f:
-                f.write(line)
+    else:
+        timestamp = -1
+       
+    if (timestamp > trim_begin) and (timestamp < trim_end):
+        
+        with open('trimmed_power_meter_1200.asc','a') as f:
+            f.write(line)
+        
+        print(f"collected \t {line}")
+        
+    elif (timestamp > trim_end):
+        break
+    
 
-f.close()
+        

@@ -31,7 +31,8 @@ def combine_dfs_in_ds(result_ds):
 
 def export_df_csv (df_out, log_name, folder_w_exports):
     
-    export_label = "_lockup_sep_drive"
-    export_name = folder_w_exports + log_name.replace(".asc","") + export_label + ".csv"
+    export_label = "_appcurve"
+    export_name = folder_w_exports + "\\" + log_name.replace(".asc","") + export_label + ".csv"
+    print("exporting to", export_name)
     df_out.to_csv(export_name)
 
