@@ -87,7 +87,7 @@ for k in signals_ds_engage:
     k["df"] = pd.DataFrame(k["time_series"], columns=['timestamp',k["name"]])
     tools_plot_or_export.plot_single_signal(k["name"], k["df"])
     
-def calc_display_correction_factor (enginespeed_error):
+def calc_display_correction_factor (enginespeed_error , torque_derate, pctload):
     
     UseCase1EngineError = 10
     UseCase2EngineErrorMin = 0
@@ -103,7 +103,7 @@ def calc_display_correction_factor (enginespeed_error):
     
     correct_factor = 100
     
-    if (enginespeed_error <= UseCase1EngineError):
+    if (enginespeed_error <= UseCase1EngineError) or (abs(torque_derate - pctload) >= 2):
         
         correct_factor = StartDarkGreenB
         
@@ -129,12 +129,19 @@ def calc_display_correction_factor (enginespeed_error):
 
 Merge the dataframes and export if desired
 '''
+#rename_list = []
+
 big_tabel = tools_plot_or_export.combine_dfs_in_ds(signals_ds_engage)
 
-big_tabel['engine_speed_error'] = big_tabel['ConsumerShaftSpeedSetpoint '] - big_tabel['HybridShaftSpeed ']
+column_titles = big_tabel.columns.tolist()
+clean_titles =[ i.strip() for i in column_titles]
 
-big_tabel['calc_display_correction_factor'] = big_tabel['engine_speed_error'].apply(calc_display_correction_factor)
+big_tabel.columns = clean_titles
 
-big_tabel['calc_power_percent'] = big_tabel['calc_display_correction_factor'] * big_tabel['HybridShaftPctLoadAtCurrentSpd '] / big_tabel ['EngTorqueDerateSetpnt ']
+big_tabel['engine_speed_error'] = big_tabel['ConsumerShaftSpeedSetpoint'] - big_tabel['HybridShaftSpeed']
+
+big_tabel['calc_display_correction_factor'] = big_tabel.apply(lambda x: calc_display_correction_factor(x.engine_speed_error, x.EngTorqueDerateSetpnt , x.HybridShaftPctLoadAtCurrentSpd), axis=1)
+
+big_tabel['calc_power_percent'] = big_tabel['calc_display_correction_factor'] * big_tabel['HybridShaftPctLoadAtCurrentSpd'] / big_tabel ['EngTorqueDerateSetpnt']
 
 tools_plot_or_export.export_df_csv(big_tabel, log_name ,folder_w_logs)
