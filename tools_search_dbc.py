@@ -153,7 +153,62 @@ def filter_signal(CAN_msg_obj,signal_dictionary):
         
         #print(signal_value)
         return(signal_value)
+
+def filter_signal_new(CAN_msg_obj,signal_dictionary):
+     #borked somethin here...
+     
+    msg_bit_nospace=bin( int( CAN_msg_obj.data_bytes.replace( " " , "" ) , 16 ))[2:].zfill(64)
     
+    if CAN_msg_obj.PGN_SA==signal_dictionary["pgnsa"] and (signal_dictionary["cmd byte"]==None or signal_dictionary["cmd byte"]==CAN_msg_obj.cmd_byte or signal_dictionary["cmd byte"]==CAN_msg_obj.cmd_byte_singleton):
+      
+        signal_value = get_signal_value( msg_bit_nospace , signal_dictionary )
+        
+        return(signal_value)
+
+
+def reverse_bits_by_byte (no_space_bitstring):
+    
+    msg_bit_le=""
+    number_of_data_bytes=len(no_space_bitstring)//8
+    
+    #bits within a byte are fully reversed to ease indexing for little endian    
+    
+    for i in range(number_of_data_bytes):
+        bits_be = no_space_bitstring[ 8*i : 8*i+8 ]
+        #print('big endian:',bits_be)
+        bits_le=bits_be[::-1]
+        #print('little endian:',bits_le)
+        msg_bit_le+=bits_le
+    
+    return msg_bit_le
+
+def get_signal_value ( msg_bit_nospace , signal_dictionary):
+    
+    #may be cleanup potential in actual conversion portion
+    
+    msg_bit_le = reverse_bits_by_byte ( msg_bit_nospace )
+    
+    signal_bit_be = msg_bit_nospace[ signal_dictionary["start bit"] : signal_dictionary["start bit"] + signal_dictionary["bit length"] ]
+    signal_bit_le = msg_bit_le[ signal_dictionary["start bit"] : signal_dictionary["start bit"] + signal_dictionary["bit length"] ]
+    
+    #when signal spans multiple data bytes, the bits must be combined less significant byte first and then converted
+    if signal_dictionary["bit length"]>8:
+        reversed_bit=""
+        
+        for i in range(len(signal_bit_be)//8):
+            add_bits=signal_bit_be[-8:]
+            reversed_bit+=add_bits
+            signal_bit_be=signal_bit_be[:-8]
+            #print(add_bits)
+        
+        signal_value=int( reversed_bit , 2) * signal_dictionary["scale factor"] + signal_dictionary["offset"]
+
+    #when bit length of signal is less than byte, then the correct bits are reversed to be converted
+    if signal_dictionary["bit length"]<=8:
+        signal_value=int( signal_bit_le[::-1] , 2 ) * signal_dictionary["scale factor"] + signal_dictionary["offset"]
+    
+    #print(signal_value)
+    return(signal_value) 
 def filter_signal_test(CAN_msg_obj,signal_dictionary):
 
     if CAN_msg_obj.PGN_SA==signal_dictionary["pgnsa"] and (signal_dictionary["cmd byte"]==None or signal_dictionary["cmd byte"]==CAN_msg_obj.cmd_byte):

@@ -8,8 +8,8 @@ For now will just shoot for trimming a chunk of time stamps out of a log
 """
 import regex as re
 
-folder_w_logs=r'D:\\098 misc field issue\\x9 1200 vpf min pitch'
-log_name='Logger_cc-82-7f-6f-96-f5_2025-10-04_160621_00103_GCH.asc'
+folder_w_logs=r'C:\\Users\\jc16287\\Downloads\\WarmUp_4Dec2025'
+log_name='WarmUp_4Dec2025.asc'
 
 with open (folder_w_logs+'\\'+log_name) as f:
     orig_lines = f.readlines()

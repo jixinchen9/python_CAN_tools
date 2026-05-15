@@ -22,9 +22,9 @@ folder_w_logs = r'D:\098 misc field issue\x9 1200 vpf min pitch'
 
 log_name = 'trimmed_power_meter_1200.asc'
 
-dbc_file_path_00 = r"D:\09 TOOLS\1200_07_oct\PodB1.dbc"
-dbc_file_path_01 = r"D:\09 TOOLS\generated_dbc_7_179\VehB1.dbc"
-dbc_file_path_02 = r"D:\09 TOOLS\generated_dbc_7_179\PodB1.dbc"
+dbc_file_path_00 = r"D:\09 TOOLS\CAN dbc for vector\1200_07_oct\PodB1.dbc"
+dbc_file_path_01 = r"D:\09 TOOLS\CAN dbc for vector\generated_dbc_7_179\VehB1.dbc"
+dbc_file_path_02 = r"D:\09 TOOLS\CAN dbc for vector\generated_dbc_7_179\PodB1.dbc"
 
 all_lines=open(folder_w_logs+'\\'+log_name).readlines()
 
@@ -75,7 +75,7 @@ for line in all_lines:
         #CAN_message_all.append(current_message)
         
         for j in signals_ds_engage:
-            signal_possible = tools_search_dbc.filter_signal(current_message, j["dict"])
+            signal_possible = tools_search_dbc.filter_signal_new(current_message, j["dict"])
             
             if signal_possible != None:
                 j["time_series"].append((current_message.time_stamp, signal_possible))
